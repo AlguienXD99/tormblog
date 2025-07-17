@@ -5,7 +5,6 @@
   <title>TormBlog</title>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-
   <style>
     body { background: #000; color: #fff; font-family: 'Segoe UI', Roboto, sans-serif; margin: 0; }
     .center { max-width: 500px; margin: 40px auto; padding: 20px; }
@@ -50,6 +49,15 @@
   <button onclick="volver()">Volver</button>
 </div>
 
+<div id="verPerfilDiv" style="
+  position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  background: #16181c; color: #fff; padding: 20px; border-radius: 15px;
+  border: 1px solid #2f3336; width: 300px; display: none; z-index: 10000;">
+  <h2 id="verPerfilNombre"></h2>
+  <p id="verPerfilBio"></p>
+  <button onclick="cerrarPerfil()">Cerrar</button>
+</div>
+
 <div id="toast" style="
   position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
   background: #222; color: #fff; padding: 12px 20px; border-radius: 9999px;
@@ -57,14 +65,11 @@
 "></div>
 
 <script>
+// Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyAKV9aBfrkLbOKN29PxfQE1eJ3anqqQuPw",
   authDomain: "tormblog.firebaseapp.com",
-  databaseURL: "https://tormblog-default-rtdb.firebaseio.com",
-  projectId: "tormblog",
-  storageBucket: "tormblog.firebasestorage.app",
-  messagingSenderId: "653253582479",
-  appId: "1:653253582479:web:4c98e83c6ee5efea8d5afa"
+  projectId: "tormblog"
 };
 
 firebase.initializeApp(firebaseConfig);
@@ -72,15 +77,7 @@ const db = firebase.firestore();
 
 let currentUser = "";
 
-// Mantener sesión al recargar
-window.onload = function() {
-  const savedUser = localStorage.getItem("currentUser");
-  if (savedUser) {
-    currentUser = savedUser;
-    showTimeline();
-  }
-}
-
+// Toast mensaje
 function toast(mensaje) {
   const t = document.getElementById("toast");
   t.innerText = mensaje;
@@ -88,6 +85,7 @@ function toast(mensaje) {
   setTimeout(() => { t.style.display = "none"; }, 3000);
 }
 
+// Registro
 async function register() {
   const u = document.getElementById("user").value.trim();
   const p = document.getElementById("pass").value.trim();
@@ -105,6 +103,7 @@ async function register() {
   }
 }
 
+// Login
 async function login() {
   const u = document.getElementById("user").value.trim();
   const p = document.getElementById("pass").value.trim();
@@ -116,19 +115,21 @@ async function login() {
 
   if (doc.exists && doc.data().password === p) {
     currentUser = u;
-    localStorage.setItem("currentUser", u);
+    localStorage.setItem("currentUser", currentUser);
     showTimeline();
   } else {
     toast("Usuario o contraseña incorrectos");
   }
 }
 
+// Mostrar timeline
 function showTimeline() {
   document.getElementById("auth").style.display = "none";
   document.getElementById("timeline").style.display = "block";
   getPosts();
 }
 
+// Postear
 async function post() {
   const text = document.getElementById("newpost").value.trim();
   if (text) {
@@ -141,6 +142,7 @@ async function post() {
   }
 }
 
+// Logout
 function logout() {
   currentUser = "";
   localStorage.removeItem("currentUser");
@@ -148,11 +150,11 @@ function logout() {
   document.getElementById("auth").style.display = "block";
 }
 
+// Obtener posts
 function getPosts() {
   db.collection("posts").orderBy("date", "desc").onSnapshot(snapshot => {
     const container = document.getElementById("posts");
     container.innerHTML = "";
-
     snapshot.forEach(doc => {
       const data = doc.data();
       const div = document.createElement("div");
@@ -163,6 +165,7 @@ function getPosts() {
   });
 }
 
+// Mi perfil
 async function verMiPerfil() {
   const doc = await db.collection("users").doc(currentUser).get();
   if (doc.exists) {
@@ -170,21 +173,23 @@ async function verMiPerfil() {
     document.getElementById("perfil").style.display = "block";
     document.getElementById("perfilUser").innerText = `@${currentUser}`;
     document.getElementById("bioInput").value = doc.data().bio;
-    toast("Edita tu perfil");
   }
 }
 
+// Guardar bio
 async function guardarBio() {
   const nuevaBio = document.getElementById("bioInput").value;
   await db.collection("users").doc(currentUser).update({ bio: nuevaBio });
   toast("Bio actualizada");
 }
 
+// Volver al timeline
 function volver() {
   document.getElementById("perfil").style.display = "none";
   document.getElementById("timeline").style.display = "block";
 }
 
+// Ver perfil de otro usuario
 async function verPerfil(nombre) {
   const doc = await db.collection("users").doc(nombre).get();
   if (doc.exists) {
@@ -196,5 +201,25 @@ async function verPerfil(nombre) {
   }
 }
 
+function cerrarPerfil() {
+  document.getElementById("verPerfilDiv").style.display = "none";
+}
+
+// Buscar perfil desde input
 function buscarPerfil() {
-  const nomb
+  const nombre = document.getElementById("buscarPerfil").value.trim();
+  if (nombre) verPerfil(nombre);
+}
+
+// Revisar si hay sesión guardada al cargar
+window.onload = function() {
+  const savedUser = localStorage.getItem("currentUser");
+  if (savedUser) {
+    currentUser = savedUser;
+    showTimeline();
+  }
+}
+</script>
+
+</body>
+</html>
