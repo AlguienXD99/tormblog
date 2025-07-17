@@ -19,7 +19,6 @@
     #timeline, #perfil { display: none; }
     .post { background: #16181c; border: 1px solid #2f3336; padding: 12px; margin: 8px 0; border-radius: 12px; font-size: 15px; }
     .user { color: #1d9bf0; font-weight: 500; cursor: pointer; }
-    .bio { font-size: 14px; color: #aaa; margin-top: 4px; }
   </style>
 </head>
 <body>
@@ -36,6 +35,8 @@
   <h1>TormBlog</h1>
   <input type="text" id="newpost" placeholder="¿Qué está pasando?" maxlength="280">
   <button onclick="post()">Publicar</button>
+  <input type="text" id="buscarPerfil" placeholder="Buscar perfil (usuario exacto)">
+  <button onclick="buscarPerfil()">Buscar</button>
   <button onclick="verMiPerfil()">Mi Perfil</button>
   <div id="posts"></div>
   <button onclick="logout()">Cerrar sesión</button>
@@ -70,6 +71,15 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
 let currentUser = "";
+
+// Mantener sesión al recargar
+window.onload = function() {
+  const savedUser = localStorage.getItem("currentUser");
+  if (savedUser) {
+    currentUser = savedUser;
+    showTimeline();
+  }
+}
 
 function toast(mensaje) {
   const t = document.getElementById("toast");
@@ -106,6 +116,7 @@ async function login() {
 
   if (doc.exists && doc.data().password === p) {
     currentUser = u;
+    localStorage.setItem("currentUser", u);
     showTimeline();
   } else {
     toast("Usuario o contraseña incorrectos");
@@ -132,6 +143,7 @@ async function post() {
 
 function logout() {
   currentUser = "";
+  localStorage.removeItem("currentUser");
   document.getElementById("timeline").style.display = "none";
   document.getElementById("auth").style.display = "block";
 }
@@ -159,8 +171,6 @@ async function verMiPerfil() {
     document.getElementById("perfilUser").innerText = `@${currentUser}`;
     document.getElementById("bioInput").value = doc.data().bio;
     toast("Edita tu perfil");
-  } else {
-    toast("Error al cargar el perfil");
   }
 }
 
@@ -185,18 +195,6 @@ async function verPerfil(nombre) {
     toast("Usuario no encontrado");
   }
 }
-function cerrarPerfil() {
-  document.getElementById("verPerfilDiv").style.display = "none";
-}
-</script>
-<div id="verPerfilDiv" style="
-  position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-  background: #16181c; color: #fff; padding: 20px; border-radius: 15px;
-  border: 1px solid #2f3336; width: 300px; display: none; z-index: 10000;">
-  <h2 id="verPerfilNombre"></h2>
-  <p id="verPerfilBio"></p>
-  <button onclick="cerrarPerfil()">Cerrar</button>
-</div>
 
-</body>
-</html>
+function buscarPerfil() {
+  const nomb
