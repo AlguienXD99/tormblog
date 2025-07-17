@@ -89,10 +89,12 @@ if (doc.exists) {
    await userRef.set({ password: p, bio: "Escribe tu bio aquí" });
    toast("Registro exitoso, inicia sesión");
 }
-
+}
 async function login() {
   const u = document.getElementById("user").value.trim();
   const p = document.getElementById("pass").value.trim();
+
+  if (!u || !p) { toast("Completa ambos campos"); return; }
 
   const userRef = db.collection("users").doc(u);
   const doc = await userRef.get();
@@ -101,7 +103,7 @@ async function login() {
     currentUser = u;
     showTimeline();
   } else {
-    alert("Usuario o contraseña incorrectos");
+    toast("Usuario o contraseña incorrectos");
   }
 }
 
