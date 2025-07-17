@@ -178,13 +178,25 @@ function volver() {
 async function verPerfil(nombre) {
   const doc = await db.collection("users").doc(nombre).get();
   if (doc.exists) {
-    const bio = doc.data().bio;
-    toast(`@${nombre}\nBio: ${bio}`);
+    document.getElementById("verPerfilNombre").innerText = `@${nombre}`;
+    document.getElementById("verPerfilBio").innerText = doc.data().bio;
+    document.getElementById("verPerfilDiv").style.display = "block";
   } else {
     toast("Usuario no encontrado");
   }
 }
+function cerrarPerfil() {
+  document.getElementById("verPerfilDiv").style.display = "none";
+}
 </script>
+<div id="verPerfilDiv" style="
+  position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  background: #16181c; color: #fff; padding: 20px; border-radius: 15px;
+  border: 1px solid #2f3336; width: 300px; display: none; z-index: 10000;">
+  <h2 id="verPerfilNombre"></h2>
+  <p id="verPerfilBio"></p>
+  <button onclick="cerrarPerfil()">Cerrar</button>
+</div>
 
 </body>
 </html>
