@@ -49,8 +49,13 @@
   <button onclick="volver()">Volver</button>
 </div>
 
+<div id="toast" style="
+  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+  background: #222; color: #fff; padding: 12px 20px; border-radius: 9999px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.5); display: none; z-index: 9999; font-size: 14px;
+"></div>
+
 <script>
-// Configuración de Firebase (cambia esto con tu proyecto real)
 const firebaseConfig = {
   apiKey: "AIzaSyAKV9aBfrkLbOKN29PxfQE1eJ3anqqQuPw",
   authDomain: "tormblog.firebaseapp.com",
@@ -77,19 +82,19 @@ async function register() {
   const u = document.getElementById("user").value.trim();
   const p = document.getElementById("pass").value.trim();
 
-  if (!u || !p) { alert("Completa ambos campos"); return; }
+  if (!u || !p) { toast("Completa ambos campos"); return; }
 
   const userRef = db.collection("users").doc(u);
   const doc = await userRef.get();
 
-if (!u || !p) { toast("Completa ambos campos"); return; }
-if (doc.exists) {
-   toast("El usuario ya existe");
-} else {
-   await userRef.set({ password: p, bio: "Escribe tu bio aquí" });
-   toast("Registro exitoso, inicia sesión");
+  if (doc.exists) {
+    toast("El usuario ya existe");
+  } else {
+    await userRef.set({ password: p, bio: "Escribe tu bio aquí" });
+    toast("Registro exitoso, inicia sesión");
+  }
 }
-}
+
 async function login() {
   const u = document.getElementById("user").value.trim();
   const p = document.getElementById("pass").value.trim();
@@ -174,16 +179,12 @@ async function verPerfil(nombre) {
   const doc = await db.collection("users").doc(nombre).get();
   if (doc.exists) {
     const bio = doc.data().bio;
-    alert(`@${nombre}\n\nBio:\n${bio}`);
+    toast(`@${nombre}\nBio: ${bio}`);
   } else {
-    alert("Usuario no encontrado");
+    toast("Usuario no encontrado");
   }
 }
 </script>
-<div id="toast" style="
-  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-  background: #222; color: #fff; padding: 12px 20px; border-radius: 9999px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.5); display: none; z-index: 9999; font-size: 14px;
-"></div>
+
 </body>
 </html>
