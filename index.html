@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>TormBlog</title>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+  <style>
+    body { font-family: Arial, sans-serif; background: #f5f8fa; margin: 0; padding: 0; }
+    .center { max-width: 400px; margin: 50px auto; padding: 20px; background: white; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+    h1 { text-align: center; color: #1da1f2; }
+    input, button { width: 100%; padding: 10px; margin: 5px 0; border-radius: 5px; border: 1px solid #ccc; }
+    #timeline { display: none; }
+    .post { background: #fff; border: 1px solid #ddd; padding: 10px; margin: 5px 0; border-radius: 8px; }
+  </style>
+</head>
+<body>
+
+<div class="center" id="auth">
+  <h1>TormBlog</h1>
+  <input type="text" id="user" placeholder="Usuario">
+  <input type="password" id="pass" placeholder="Contraseña">
+  <button onclick="login()">Iniciar sesión</button>
+  <button onclick="register()">Registrarse</button>
+</div>
+
+<div class="center" id="timeline">
+  <h1>TormBlog</h1>
+  <div>
+    <input type="text" id="newpost" placeholder="¿Qué está pasando?">
+    <button onclick="post()">Publicar</button>
+  </div>
+  <div id="posts"></div>
+  <button onclick="logout()">Cerrar sesión</button>
+</div>
+
+<script>
+// Configura tu Firebase aquí:
+const firebaseConfig = {
+  apiKey: "AIzaSyAKV9aBfrkLbOKN29PxfQE1eJ3anqqQuPw",
+  authDomain: "tormblog.firebaseapp.com",
+  projectId: "tormblog",
+  storageBucket: "tormblog.firebasestorage.app",
+  messagingSenderId: "653253582479",
+  appId: "1:653253582479:web:4c98e83c6ee5efea8d5afa"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+let currentUser = "";
+
+async function register() {
+  const u = document.getElementById("user").value;
+  const p = document.getElementById("pass").value;
+
+  const userRef = db.collection("users").doc(u);
+  const doc = await userRef.get();
+
+  if (doc.exists) {
+    alert("El usuario ya existe");
+  } else {
+    await userRef.set({ password: p });
+    alert("Registro exitoso, ahora inicia sesión");
+  }
+}
+
+async function login() {
+  const u = document.getElementById("user").value;
+  const p = document.getElementById("pass").value;
+
+  const userRef = db.collection("users").doc(u);
+  const doc = await userRef.get();
+
+  if (doc.exists && doc.data().password === p) {
+    currentUser = u;
+    showTimeline();
+  } else {
+    alert("Usuario o contraseña incorrectos");
+  }
+}
+
+function showTimeline() {
+  document.getElementById("auth").style.display = "none";
+  document.getElementById("timeline").style.display = "block";
+  document.getElementById("newpost").placeholder = "@" + currentUser + ", escribe un post";
+  getPosts();
+}
+
+async function post() {
+  const text = document.getElementById("newpost").value;
+
+  if (text.trim() !== "") {
+    await db.collection("posts").add({
+      user: currentUser,
+      text: text,
+      date: new Date()
+    });
+
+    document.getElementById("newpost").value = "";
+    getPosts();
+  }
+}
+
+function logout() {
+  currentUser = "";
+  document.getElementById("timeline").style.display = "none";
+  document.getElementById("auth").style.display = "block";
+}
+
+function getPosts() {
+  db.collection("posts").orderBy("date", "desc").onSnapshot(snapshot => {
+    const container = document.getElementById("posts");
+    container.innerHTML = "";
+
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      const div = document.createElement("div");
+      div.className = "post";
+      div.innerText = `@${data.user}: ${data.text}`;
+      container.appendChild(div);
+    });
+  });
+}
+
+</script>
+
+</body>
+</html>
