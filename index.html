@@ -2,24 +2,73 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>TormBlog</title>
+  <title>TormBlog X</title>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 
   <style>
-    body { font-family: Arial, sans-serif; background: #f5f8fa; margin: 0; padding: 0; }
-    .center { max-width: 400px; margin: 50px auto; padding: 20px; background: white; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-    h1 { text-align: center; color: #1da1f2; }
-    input, button { width: 100%; padding: 10px; margin: 5px 0; border-radius: 5px; border: 1px solid #ccc; }
-    #timeline { display: none; }
-    .post { background: #fff; border: 1px solid #ddd; padding: 10px; margin: 5px 0; border-radius: 8px; }
+    body {
+      background: #000;
+      color: #fff;
+      font-family: 'Segoe UI', Roboto, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    .center {
+      max-width: 500px;
+      margin: 40px auto;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      font-weight: 600;
+      font-size: 28px;
+      margin-bottom: 20px;
+    }
+    input, button {
+      width: 100%;
+      padding: 12px;
+      margin: 6px 0;
+      border-radius: 9999px;
+      border: none;
+      font-size: 15px;
+    }
+    input {
+      background: #16181c;
+      color: #fff;
+      border: 1px solid #2f3336;
+    }
+    button {
+      background: #1d9bf0;
+      color: #fff;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background: #1a8cd8;
+    }
+    #timeline {
+      display: none;
+    }
+    .post {
+      background: #16181c;
+      border: 1px solid #2f3336;
+      padding: 12px;
+      margin: 8px 0;
+      border-radius: 12px;
+      font-size: 15px;
+    }
+    .user {
+      color: #1d9bf0;
+      font-weight: 500;
+    }
   </style>
 </head>
 <body>
 
 <div class="center" id="auth">
   <h1>TormBlog</h1>
-  <input type="text" id="user" placeholder="Usuario">
+  <input type="text" id="user" placeholder="Nombre de usuario">
   <input type="password" id="pass" placeholder="Contraseña">
   <button onclick="login()">Iniciar sesión</button>
   <button onclick="register()">Registrarse</button>
@@ -27,19 +76,18 @@
 
 <div class="center" id="timeline">
   <h1>TormBlog</h1>
-  <div>
-    <input type="text" id="newpost" placeholder="¿Qué está pasando?">
-    <button onclick="post()">Publicar</button>
-  </div>
+  <input type="text" id="newpost" placeholder="¿Qué está pasando?" maxlength="280">
+  <button onclick="post()">Publicar</button>
   <div id="posts"></div>
   <button onclick="logout()">Cerrar sesión</button>
 </div>
 
 <script>
-// Configura tu Firebase aquí:
+// Configuración de Firebase (Cambia esto con tu proyecto real)
 const firebaseConfig = {
   apiKey: "AIzaSyAKV9aBfrkLbOKN29PxfQE1eJ3anqqQuPw",
   authDomain: "tormblog.firebaseapp.com",
+  databaseURL: "https://tormblog-default-rtdb.firebaseio.com",
   projectId: "tormblog",
   storageBucket: "tormblog.firebasestorage.app",
   messagingSenderId: "653253582479",
@@ -52,8 +100,10 @@ const db = firebase.firestore();
 let currentUser = "";
 
 async function register() {
-  const u = document.getElementById("user").value;
-  const p = document.getElementById("pass").value;
+  const u = document.getElementById("user").value.trim();
+  const p = document.getElementById("pass").value.trim();
+
+  if (!u || !p) { alert("Completa ambos campos"); return; }
 
   const userRef = db.collection("users").doc(u);
   const doc = await userRef.get();
@@ -62,13 +112,13 @@ async function register() {
     alert("El usuario ya existe");
   } else {
     await userRef.set({ password: p });
-    alert("Registro exitoso, ahora inicia sesión");
+    alert("Registro exitoso, inicia sesión");
   }
 }
 
 async function login() {
-  const u = document.getElementById("user").value;
-  const p = document.getElementById("pass").value;
+  const u = document.getElementById("user").value.trim();
+  const p = document.getElementById("pass").value.trim();
 
   const userRef = db.collection("users").doc(u);
   const doc = await userRef.get();
@@ -84,22 +134,18 @@ async function login() {
 function showTimeline() {
   document.getElementById("auth").style.display = "none";
   document.getElementById("timeline").style.display = "block";
-  document.getElementById("newpost").placeholder = "@" + currentUser + ", escribe un post";
   getPosts();
 }
 
 async function post() {
-  const text = document.getElementById("newpost").value;
-
-  if (text.trim() !== "") {
+  const text = document.getElementById("newpost").value.trim();
+  if (text) {
     await db.collection("posts").add({
       user: currentUser,
       text: text,
       date: new Date()
     });
-
     document.getElementById("newpost").value = "";
-    getPosts();
   }
 }
 
@@ -118,7 +164,7 @@ function getPosts() {
       const data = doc.data();
       const div = document.createElement("div");
       div.className = "post";
-      div.innerText = `@${data.user}: ${data.text}`;
+      div.innerHTML = `<span class="user">@${data.user}</span><br>${data.text}`;
       container.appendChild(div);
     });
   });
