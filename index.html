@@ -2,66 +2,24 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>TormBlog</title>
+  <title>TormBlog X</title>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 
   <style>
-    body {
-      background: #000;
-      color: #fff;
-      font-family: 'Segoe UI', Roboto, sans-serif;
-      margin: 0;
-      padding: 0;
+    body { background: #000; color: #fff; font-family: 'Segoe UI', Roboto, sans-serif; margin: 0; }
+    .center { max-width: 500px; margin: 40px auto; padding: 20px; }
+    h1 { text-align: center; font-size: 28px; font-weight: 600; }
+    input, button, textarea {
+      width: 100%; padding: 12px; margin: 6px 0; border-radius: 9999px; border: none; font-size: 15px;
     }
-    .center {
-      max-width: 500px;
-      margin: 40px auto;
-      padding: 20px;
-    }
-    h1 {
-      text-align: center;
-      font-weight: 600;
-      font-size: 28px;
-      margin-bottom: 20px;
-    }
-    input, button {
-      width: 100%;
-      padding: 12px;
-      margin: 6px 0;
-      border-radius: 9999px;
-      border: none;
-      font-size: 15px;
-    }
-    input {
-      background: #16181c;
-      color: #fff;
-      border: 1px solid #2f3336;
-    }
-    button {
-      background: #1d9bf0;
-      color: #fff;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-    button:hover {
-      background: #1a8cd8;
-    }
-    #timeline {
-      display: none;
-    }
-    .post {
-      background: #16181c;
-      border: 1px solid #2f3336;
-      padding: 12px;
-      margin: 8px 0;
-      border-radius: 12px;
-      font-size: 15px;
-    }
-    .user {
-      color: #1d9bf0;
-      font-weight: 500;
-    }
+    input, textarea { background: #16181c; color: #fff; border: 1px solid #2f3336; }
+    button { background: #1d9bf0; color: #fff; cursor: pointer; transition: background 0.3s; }
+    button:hover { background: #1a8cd8; }
+    #timeline, #perfil { display: none; }
+    .post { background: #16181c; border: 1px solid #2f3336; padding: 12px; margin: 8px 0; border-radius: 12px; font-size: 15px; }
+    .user { color: #1d9bf0; font-weight: 500; cursor: pointer; }
+    .bio { font-size: 14px; color: #aaa; margin-top: 4px; }
   </style>
 </head>
 <body>
@@ -78,12 +36,21 @@
   <h1>TormBlog</h1>
   <input type="text" id="newpost" placeholder="¿Qué está pasando?" maxlength="280">
   <button onclick="post()">Publicar</button>
+  <button onclick="verMiPerfil()">Mi Perfil</button>
   <div id="posts"></div>
   <button onclick="logout()">Cerrar sesión</button>
 </div>
 
+<div class="center" id="perfil">
+  <h1>Mi Perfil</h1>
+  <p id="perfilUser"></p>
+  <textarea id="bioInput" rows="3"></textarea>
+  <button onclick="guardarBio()">Guardar Bio</button>
+  <button onclick="volver()">Volver</button>
+</div>
+
 <script>
-// Configuración de Firebase (Cambia esto con tu proyecto real)
+// Configuración de Firebase (cambia esto con tu proyecto real)
 const firebaseConfig = {
   apiKey: "AIzaSyAKV9aBfrkLbOKN29PxfQE1eJ3anqqQuPw",
   authDomain: "tormblog.firebaseapp.com",
@@ -111,7 +78,7 @@ async function register() {
   if (doc.exists) {
     alert("El usuario ya existe");
   } else {
-    await userRef.set({ password: p });
+    await userRef.set({ password: p, bio: "Escribe tu bio aquí" });
     alert("Registro exitoso, inicia sesión");
   }
 }
@@ -164,10 +131,41 @@ function getPosts() {
       const data = doc.data();
       const div = document.createElement("div");
       div.className = "post";
-      div.innerHTML = `<span class="user">@${data.user}</span><br>${data.text}`;
+      div.innerHTML = `<span class="user" onclick="verPerfil('${data.user}')">@${data.user}</span><br>${data.text}`;
       container.appendChild(div);
     });
   });
+}
+
+async function verMiPerfil() {
+  const doc = await db.collection("users").doc(currentUser).get();
+  if (doc.exists) {
+    document.getElementById("timeline").style.display = "none";
+    document.getElementById("perfil").style.display = "block";
+    document.getElementById("perfilUser").innerText = `@${currentUser}`;
+    document.getElementById("bioInput").value = doc.data().bio;
+  }
+}
+
+async function guardarBio() {
+  const nuevaBio = document.getElementById("bioInput").value;
+  await db.collection("users").doc(currentUser).update({ bio: nuevaBio });
+  alert("Bio actualizada");
+}
+
+function volver() {
+  document.getElementById("perfil").style.display = "none";
+  document.getElementById("timeline").style.display = "block";
+}
+
+async function verPerfil(nombre) {
+  const doc = await db.collection("users").doc(nombre).get();
+  if (doc.exists) {
+    const bio = doc.data().bio;
+    alert(`@${nombre}\n\nBio:\n${bio}`);
+  } else {
+    alert("Usuario no encontrado");
+  }
 }
 
 </script>
