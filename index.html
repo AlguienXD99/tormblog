@@ -25,29 +25,29 @@
 
 <div class="center" id="auth">
   <h1>TormBlog</h1>
-  <input type="text" id="user" placeholder="Nombre de usuario">
-  <input type="password" id="pass" placeholder="Contraseña">
-  <button onclick="login()">Iniciar sesión</button>
-  <button onclick="register()">Registrarse</button>
+  <input type="text" id="user" placeholder="Username">
+  <input type="password" id="pass" placeholder="Password">
+  <button onclick="login()">Login</button>
+  <button onclick="register()">Register</button>
 </div>
 
 <div class="center" id="timeline">
   <h1>TormBlog</h1>
   <input type="text" id="newpost" placeholder="¿Qué está pasando?" maxlength="280">
-  <button onclick="post()">Publicar</button>
-  <input type="text" id="buscarPerfil" placeholder="Buscar perfil (usuario exacto)">
-  <button onclick="buscarPerfil()">Buscar</button>
-  <button onclick="verMiPerfil()">Mi Perfil</button>
+  <button onclick="post()">Post</button>
+  <input type="text" id="buscarPerfil" placeholder="Search profile (exact user)">
+  <button onclick="buscarPerfil()">Search</button>
+  <button onclick="verMiPerfil()">My profile</button>
   <div id="posts"></div>
-  <button onclick="logout()">Cerrar sesión</button>
+  <button onclick="logout()">Log out</button>
 </div>
 
 <div class="center" id="perfil">
-  <h1>Mi Perfil</h1>
+  <h1>My profile</h1>
   <p id="perfilUser"></p>
   <textarea id="bioInput" rows="3"></textarea>
-  <button onclick="guardarBio()">Guardar Bio</button>
-  <button onclick="volver()">Volver</button>
+  <button onclick="guardarBio()">Save Bio</button>
+  <button onclick="volver()">Back</button>
 </div>
 
 <div id="verPerfilDiv" style="
@@ -56,7 +56,7 @@
   border: 1px solid #2f3336; width: 300px; display: none; z-index: 10000;">
   <h2 id="verPerfilNombre"></h2>
   <p id="verPerfilBio"></p>
-  <button onclick="cerrarPerfil()">Cerrar</button>
+  <button onclick="cerrarPerfil()">Close</button>
 </div>
 
 <div id="toast" style="
@@ -97,10 +97,10 @@ async function register() {
   const doc = await userRef.get();
 
   if (doc.exists) {
-    toast("El usuario ya existe");
+    toast("The user already exists");
   } else {
-    await userRef.set({ password: p, bio: "Escribe tu bio aquí" });
-    toast("Registro exitoso, inicia sesión");
+    await userRef.set({ password: p, bio: "Write your Bio here" });
+    toast("Registration successful, please log in");
   }
 }
 
@@ -109,7 +109,7 @@ async function login() {
   const u = document.getElementById("user").value.trim();
   const p = document.getElementById("pass").value.trim();
 
-  if (!u || !p) { toast("Completa ambos campos"); return; }
+  if (!u || !p) { toast("Complete both fields"); return; }
 
   const userRef = db.collection("users").doc(u);
   const doc = await userRef.get();
@@ -119,7 +119,7 @@ async function login() {
     localStorage.setItem("currentUser", currentUser);
     showTimeline();
   } else {
-    toast("Usuario o contraseña incorrectos");
+    toast("User or password is incorrect");
   }
 }
 
@@ -198,7 +198,7 @@ async function verPerfil(nombre) {
     document.getElementById("verPerfilBio").innerText = doc.data().bio;
     document.getElementById("verPerfilDiv").style.display = "block";
   } else {
-    toast("Usuario no encontrado");
+    toast("User not found");
   }
 }
 
